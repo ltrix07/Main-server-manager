@@ -3,13 +3,11 @@ import aiohttp
 from aiogram import Bot
 from aiogram.types import FSInputFile
 import websockets
-from settings import api_proxy_url, bot_token, chat_id_for_errors_attention, chat_id_for_flipping_reports, chat_id_for_reports, \
-    brake_down_for_proxy, chat_id_for_errors_backend
+from settings import (api_proxy_url, bot_token, chat_id_for_errors_attention, chat_id_for_flipping_reports,
+                      chat_id_for_reports, brake_down_for_proxy, chat_id_for_errors_backend)
 import json
 import base64
 import os
-import shutil
-import tempfile
 
 bot = Bot(bot_token)
 
@@ -112,8 +110,8 @@ class WorkWithAPI:
                         'errors': []
                     }
 
-    async def set_comment(self, proxy_list):
-        data = {'ids': [], 'comment': 'In use'}
+    async def set_comment(self, proxy_list, comment):
+        data = {'ids': [], 'comment': comment}
 
         for proxy in proxy_list:
             data['ids'].append(proxy['id'])
@@ -122,22 +120,13 @@ class WorkWithAPI:
             await session.post(self.url + '/proxy/comment/set', data=json.dumps(data),
                                headers={'Content-Type': 'application/json'})
 
-    async def clear_comment(self, proxy_list):
-        data = {'ids': [], 'comment': ''}
-
-        for proxy in proxy_list:
-            data['ids'].append(proxy['id'])
-
-        async with aiohttp.ClientSession() as session:
-            await session.post(self.url + '/proxy/comment/set', data=json.dumps(data),
-                               headers={'Content-Type': 'application/json'})
-
-    async def clear_comment_all(self):
+    async def set_comment_all(self, comment):
         all_proxies = await self.get_proxies()
-        data = {'ids': [], 'comment': ''}
+        data = {'ids': [], 'comment': comment}
 
         for proxy in all_proxies:
-            data['ids'].append(proxy['id'])
+            if proxy['comment'] != 'ban':
+                data['ids'].append(proxy['id'])
 
         async with aiohttp.ClientSession() as session:
             await session.post(self.url + '/proxy/comment/set', data=json.dumps(data),
@@ -147,7 +136,9 @@ class WorkWithAPI:
         all_proxies = await self.get_proxies()
 
         if len(all_proxies) >= brake_down_for_proxy:
-            error = f'Кол-во купленных прокси равно {len(all_proxies)}. Это превышает установленное ограничение. Пожалуйста, убедитесь что бот покупает прокси исправно и при необходимости увеличьте лимит.'
+            error = (f'Кол-во купленных прокси равно {len(all_proxies)}. '
+                     f'Это превышает установленное ограничение. '
+                     f'Пожалуйста, убедитесь что бот покупает прокси исправно и при необходимости увеличьте лимит.')
             await bot.send_message(chat_id_for_errors_backend, error)
 
         valid_proxies = self.proxy_comment_check(all_proxies, qty)
@@ -181,7 +172,7 @@ class WorkWithAPI:
                     self.message_about_funds = False
                     return await self.proxy_processing(qty)
         else:
-            await self.set_comment(valid_proxies)
+            await self.set_comment(valid_proxies, 'In use')
             return valid_proxies
 
     async def second_request(self, qty, retries=10,):
@@ -189,7 +180,7 @@ class WorkWithAPI:
         valid_proxies = self.proxy_comment_check(all_proxies, qty)
 
         if valid_proxies:
-            await self.set_comment(valid_proxies)
+            await self.set_comment(valid_proxies, 'In use')
             return valid_proxies
         elif retries != 0:
             retries -= 1
@@ -255,6 +246,12 @@ class ServerLogic:
                 async with self.semaphore_1:
                     await self.reset_proxy(message)
                 response['status'], response['message'] = 'success', 'Proxies was reset'
+            elif message['message_type'] == 'bad_proxy':
+                async with self.semaphore_1:
+                    await self.proxy_ban(message)
+                    new_proxies = await self.get_proxy(message)
+                response['status'], response['message'] = 'success', 'Proxy was banned'
+                response['data']['proxies'] = new_proxies
             else:
                 response['status'], response['message'] = 'error', 'Unknown message type'
 
@@ -271,10 +268,13 @@ class ServerLogic:
         return proxies
 
     async def reset_proxy(self, request):
-        await self.api_worker.clear_comment(request['proxies'])
+        await self.api_worker.set_comment(request['proxies'], '')
 
     async def reset_all_proxies(self):
-        await self.api_worker.clear_comment_all()
+        await self.api_worker.set_comment_all('')
+
+    async def proxy_ban(self, request):
+        await self.api_worker.set_comment(request['proxies'], comment='ban')
 
     @staticmethod
     async def message_send_errors_custom(request):
@@ -300,7 +300,6 @@ class ServerLogic:
         await bot.send_document(chat_id, input_file, caption=caption)
         os.remove(f'./{file_name}')
 
-
     async def message_report_send_text(self, request):
         shop_name = request.get("shop_name")
         all_processed = request.get("all_processed")
@@ -314,7 +313,7 @@ class ServerLogic:
         time_for_code_processing = request.get("time_of_code_processing")
         proxies = request.get('proxies')
 
-        await self.api_worker.clear_comment(proxies)
+        await self.api_worker.set_comment(proxies, '')
 
         text = create_text_pattern(shop_name=shop_name, all_processed=all_processed,
                                    new_nones=new_nones, new_in_stock=new_in_stock,
