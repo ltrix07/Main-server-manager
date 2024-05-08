@@ -249,9 +249,7 @@ class ServerLogic:
             elif message['message_type'] == 'bad_proxy':
                 async with self.semaphore_1:
                     await self.proxy_ban(message)
-                    new_proxies = await self.get_proxy(message)
                 response['status'], response['message'] = 'success', 'Proxy was banned'
-                response['data']['proxies'] = new_proxies
             else:
                 response['status'], response['message'] = 'error', 'Unknown message type'
 
