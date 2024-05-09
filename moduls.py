@@ -116,7 +116,8 @@ class WorkWithAPI:
         data = {'ids': [], 'comment': comment}
 
         for proxy in proxy_list:
-            data['ids'].append(proxy['id'])
+            if proxy['comment'] != 'ban':
+                data['ids'].append(proxy['id'])
 
         async with aiohttp.ClientSession() as session:
             await session.post(self.url + '/proxy/comment/set', data=json.dumps(data),
