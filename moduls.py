@@ -14,7 +14,7 @@ bot = Bot(bot_token)
 
 def create_text_pattern(shop_name, all_processed, new_nones, new_in_stock, new_price,
                         new_shipping_price, average_processing_time_for_link, time_for_code_processing,
-                        bad_info_perc, errors, error_status=False):
+                        bad_info_perc, errors, amz_updated_status, error_status=False):
 
     for key, error in errors.items():
         if error:
@@ -41,7 +41,9 @@ timeout error - {errors['time_out_errors']}
 ebay close connection - {errors['ebay_close_connection']}
 server close connection - {errors['server_close_connection']}
 ''' if error_status else ''}
-Товары на Амазон обновлены успешно!
+{'Товары на Амазон обновлены успешно!' if amz_updated_status else ('Не был залит файл на Амазон.'
+                                                                           'Скорее всего, причина ошибки - '
+                                                                           'не действительные ключи доступа.')}
 {f"Слишком много ошибок прокси - {bad_info_perc * 100}%" if bad_info_perc >= 0.05 else ""}
 """
 
@@ -310,6 +312,7 @@ class ServerLogic:
         average_time_for_processing_link = request.get("average_time_for_processing_link")
         time_for_code_processing = request.get("time_of_code_processing")
         proxies = request.get('proxies')
+        add_to_amz = request.get('amz_updated')
 
         await self.api_worker.set_comment(proxies, '')
 
@@ -317,7 +320,8 @@ class ServerLogic:
                                    new_nones=new_nones, new_in_stock=new_in_stock,
                                    new_price=new_price, new_shipping_price=new_shipping_price,
                                    bad_info_perc=bad_info_perc, time_for_code_processing=time_for_code_processing,
-                                   average_processing_time_for_link=average_time_for_processing_link, errors=errors)
+                                   average_processing_time_for_link=average_time_for_processing_link, errors=errors,
+                                   amz_updated_status=add_to_amz)
 
         await bot.send_message(chat_id_for_reports, text)
 
