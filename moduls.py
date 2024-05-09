@@ -41,7 +41,7 @@ timeout error - {errors['time_out_errors']}
 ebay close connection - {errors['ebay_close_connection']}
 server close connection - {errors['server_close_connection']}
 ''' if error_status else ''}
-{'Товары на Амазон обновлены успешно!' if amz_updated_status else ('Не был залит файл на Амазон.'
+{'Товары на Амазон обновлены успешно!' if amz_updated_status else ('Не был залит файл на Амазон. '
                                                                            'Скорее всего, причина ошибки - '
                                                                            'не действительные ключи доступа.')}
 {f"Слишком много ошибок прокси - {bad_info_perc * 100}%" if bad_info_perc >= 0.05 else ""}
