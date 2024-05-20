@@ -42,6 +42,7 @@ ebay close connection - {errors['ebay_close_connection']}
 server close connection - {errors['server_close_connection']}
 ''' if error_status else ''}
 {amz_updated_status}
+
 {f"Слишком много ошибок прокси - {bad_info_perc * 100}%" if bad_info_perc >= 0.05 else ""}
 """
 
@@ -217,6 +218,10 @@ class ServerLogic:
             if message['message_type'] == 'get_proxy':
                 async with self.semaphore_1:
                     proxies = await self.get_proxy(message)
+                response['data']['proxies'] = proxies
+            if message['message_type'] == 'get_proxy_all':
+                async with self.semaphore_1:
+                    proxies = await self.api_worker.get_proxies()
                 response['data']['proxies'] = proxies
             elif message['message_type'] == 'send_report_text':
                 async with self.semaphore_5:
