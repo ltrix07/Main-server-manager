@@ -55,16 +55,16 @@ class WorkWithAPI:
         self.url = api_proxy_url
         self.message_about_funds = False
 
-    async def get_proxies(self):
+    async def get_proxies(self, prox_type):
         async with aiohttp.ClientSession() as session:
-            async with session.get(self.url + '/proxy/list/ipv4') as response:
+            async with session.get(self.url + f'/proxy/list/{prox_type}') as response:
                 if response.ok:
                     result = await response.json()
                     return result['data']['items']
                 else:
                     if response.status == 429:
                         await asyncio.sleep(10)
-                        return await self.get_proxies()
+                        return await self.get_proxies(prox_type)
 
     @staticmethod
     def proxy_comment_check(all_proxies, qty):
@@ -81,11 +81,11 @@ class WorkWithAPI:
     async def buy_proxy(self, need_qty, valid_proxy_length):
         qty = need_qty - valid_proxy_length
         data = {
-            'countryId': 565,
-            'periodId': '1w',
+            'countryId': 3282888,
+            'periodId': '7d',
             'quantity': qty,
-            'targetSectionId': 79,
-            'targetId': 1461
+            'targetSectionId': 223,
+            'targetId': 3281106
         }
         try:
             async with aiohttp.ClientSession() as session:
@@ -121,8 +121,8 @@ class WorkWithAPI:
             await session.post(self.url + '/proxy/comment/set', data=json.dumps(data),
                                headers={'Content-Type': 'application/json'})
 
-    async def set_comment_all(self, comment):
-        all_proxies = await self.get_proxies()
+    async def set_comment_all(self, comment, prox_type):
+        all_proxies = await self.get_proxies(prox_type)
         data = {'ids': [], 'comment': comment}
 
         for proxy in all_proxies:
@@ -133,8 +133,8 @@ class WorkWithAPI:
             await session.post(self.url + '/proxy/comment/set', data=json.dumps(data),
                                headers={'Content-Type': 'application/json'})
 
-    async def proxy_processing(self, qty):
-        all_proxies = await self.get_proxies()
+    async def proxy_processing(self, qty, prox_type):
+        all_proxies = await self.get_proxies(prox_type)
 
         if len(all_proxies) >= brake_down_for_proxy:
             error = (f'Кол-во купленных прокси равно {len(all_proxies)}. '
@@ -171,13 +171,13 @@ class WorkWithAPI:
                     return 'Insufficient funds on proxy service'
                 else:
                     self.message_about_funds = False
-                    return await self.proxy_processing(qty)
+                    return await self.proxy_processing(qty, prox_type)
         else:
             await self.set_comment(valid_proxies, 'In use')
             return valid_proxies
 
-    async def second_request(self, qty, retries=10,):
-        all_proxies = await self.get_proxies()
+    async def second_request(self, qty, retries=10):
+        all_proxies = await self.get_proxies(prox_type)
         valid_proxies = self.proxy_comment_check(all_proxies, qty)
 
         if valid_proxies:
@@ -217,11 +217,14 @@ class ServerLogic:
         try:
             if message['message_type'] == 'get_proxy':
                 async with self.semaphore_1:
-                    proxies = await self.get_proxy(message)
+                    proxies = await self.get_proxy(message, 'isp')
                 response['data']['proxies'] = proxies
-            if message['message_type'] == 'get_proxy_all':
+            if message['message_type'] == 'get_proxy_all_isp':
                 async with self.semaphore_1:
-                    proxies = await self.api_worker.get_proxies()
+                    proxies = await self.api_worker.get_proxies('isp')
+                if len(proxies) < 100:
+                    message = f'Кол-во прокси у поставщика {len(proxies)}. @L_trix'
+                    await bot.send_message(chat_id_for_errors_backend, message)
                 response['data']['proxies'] = proxies
             elif message['message_type'] == 'send_report_text':
                 async with self.semaphore_5:
@@ -245,7 +248,7 @@ class ServerLogic:
                 response['status'], response['message'] = 'success', 'Error was send to Telegram'
             elif message['message_type'] == 'reset_all_proxy':
                 async with self.semaphore_1:
-                    await self.reset_all_proxies()
+                    await self.reset_all_proxies('isp')
                 response['status'], response['message'] = 'success', 'All proxies was reset'
             elif message['message_type'] == 'reset_proxy':
                 async with self.semaphore_1:
@@ -264,17 +267,17 @@ class ServerLogic:
 
         return response
 
-    async def get_proxy(self, request):
+    async def get_proxy(self, request, prox_type):
         quantity = request["qty"]
-        proxies = await self.api_worker.proxy_processing(quantity)
+        proxies = await self.api_worker.proxy_processing(quantity, prox_type)
 
         return proxies
 
     async def reset_proxy(self, request):
         await self.api_worker.set_comment(request['proxies'], '')
 
-    async def reset_all_proxies(self):
-        await self.api_worker.set_comment_all('')
+    async def reset_all_proxies(self, prox_type):
+        await self.api_worker.set_comment_all('', prox_type)
 
     async def proxy_ban(self, request):
         await self.api_worker.set_comment(request['proxies'], comment='ban')
