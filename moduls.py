@@ -41,7 +41,7 @@ timeout error - {errors['time_out_errors']}
 ebay close connection - {errors['ebay_close_connection']}
 server close connection - {errors['server_close_connection']}
 ''' if error_status else ''}
-{amz_updated_status}
+{'Товары залиты' if amz_updated_status is True else amz_updated_status}
 
 {f"Слишком много ошибок прокси - {bad_info_perc * 100}%" if bad_info_perc >= 0.05 else ""}
 """
