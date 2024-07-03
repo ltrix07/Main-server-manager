@@ -1,6 +1,5 @@
-from moduls import ServerLogic
+from server import ServerLogic
 import asyncio
-import websockets
 
 
 async def main():

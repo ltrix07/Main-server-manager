@@ -2,14 +2,10 @@ import asyncio
 import aiohttp
 from aiogram import Bot
 from aiogram.types import FSInputFile
-import websockets
-from settings import (api_proxy_url, bot_token, chat_id_for_errors_attention, chat_id_for_flipping_reports,
-                      chat_id_for_reports, brake_down_for_proxy, chat_id_for_errors_backend)
 import json
 import base64
 import os
 
-bot = Bot(bot_token)
 
 
 def create_text_pattern(shop_name, all_processed, new_nones, new_in_stock, new_price,
