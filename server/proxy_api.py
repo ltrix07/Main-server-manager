@@ -1,12 +1,18 @@
+import aiohttp
+import asyncio
+from server import read_json
+
+
 class WorkWithAPI:
-    def __init__(self):
-        super().__init__()
-        self.url = api_proxy_url
-        self.message_about_funds = False
+    def __init__(self, creds_path: str):
+        self.creds = read_json(creds_path)
+        self.api_key = self.creds.get('api_proxy_token')
+        self.api_domain = self.creds.get('api_proxy_url')
+        self.api_url = self.api_domain + self.api_key
 
     async def get_proxies(self, prox_type):
         async with aiohttp.ClientSession() as session:
-            async with session.get(self.url + f'/proxy/list/{prox_type}') as response:
+            async with session.get(self.api_url + f'/proxy/list/{prox_type}') as response:
                 if response.ok:
                     result = await response.json()
                     return result['data']['items']

@@ -1,12 +1,13 @@
-from server import ServerLogic
 import asyncio
+from aiohttp import web
+from server import ServerLogic
 
 
 async def main():
     server = ServerLogic()
-    async with websockets.serve(server.ws_handler, "", 3000, max_size=None):
-        print('Server run on 3000')
-        await asyncio.Future()
+    app = server.init_server()
+    web.run_app(app, host='0.0.0.0', port=3000)
+
 
 if __name__ == '__main__':
     asyncio.run(main())
