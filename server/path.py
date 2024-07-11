@@ -1,0 +1,6 @@
+get_proxies_path = '/get_proxies'
+send_message_path = '/message'
+error_attention_path = '/error_attention'
+saving_and_sending_file_path = '/send_file'
+send_report_path = '/report'
+error_backend_path = '/error_backend'

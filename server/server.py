@@ -3,7 +3,8 @@ import os
 from aiohttp import web
 from aiogram.types import FSInputFile
 from server import bot, collector_main_text_block, create_text_pattern, WorkWithAPI, read_json, \
-    collector_error_block
+    collector_error_block, get_proxies_path, send_report_path, error_backend_path, error_attention_path, \
+    saving_and_sending_file_path, send_message_path
 
 
 class ServerLogic:
@@ -17,13 +18,12 @@ class ServerLogic:
 
     def init_server(self):
         app = web.Application()
-        app.router.add_get('/get_proxies', self.get_proxies)
-        app.router.add_post('/message', self.send_message)
-        app.router.add_post('/error_attention', self.error_attention)
-        app.router.add_post('/send_file', self.saving_and_sending_file)
-        app.router.add_post('/report', self.send_report)
-        app.router.add_post('/error_backend', self.error_backend)
-        app.router.add_post('/send_report', self.send_report)
+        app.router.add_get(get_proxies_path, self.get_proxies)
+        app.router.add_post(send_message_path, self.send_message)
+        app.router.add_post(error_attention_path, self.error_attention)
+        app.router.add_post(saving_and_sending_file_path, self.saving_and_sending_file)
+        app.router.add_post(send_report_path, self.send_report)
+        app.router.add_post(error_backend_path, self.error_backend)
         return app
 
     def _chat_type_check(self, chat_type):
