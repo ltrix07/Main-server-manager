@@ -2,7 +2,8 @@ import base64
 import os
 from aiohttp import web
 from aiogram.types import FSInputFile
-from server import bot, create_text_pattern, WorkWithAPI, read_json
+from server import bot, collector_main_text_block, create_text_pattern, WorkWithAPI, read_json, \
+    collector_error_block
 
 
 class ServerLogic:
@@ -18,6 +19,11 @@ class ServerLogic:
         app = web.Application()
         app.router.add_get('/get_proxies', self.get_proxies)
         app.router.add_post('/message', self.send_message)
+        app.router.add_post('/error_attention', self.error_attention)
+        app.router.add_post('/send_file', self.saving_and_sending_file)
+        app.router.add_post('/report', self.send_report)
+        app.router.add_post('/error_backend', self.error_backend)
+        app.router.add_post('/send_report', self.send_report)
         return app
 
     def _chat_type_check(self, chat_type):
@@ -43,15 +49,16 @@ class ServerLogic:
         proxies = await self.api.get_proxies(proxy_type)
         return web.json_response(proxies)
 
-    async def error_attention(self, request):
-        shop_name = request["shop_name"]
-        message_text = request["message_text"]
+    async def error_attention(self, request: web.Request):
+        data = await request.json()
+        shop_name = data.get('shop_name')
+        message_text = data.get("message_text")
 
         text = f"{shop_name}: {message_text}"
-
         await bot.send_message(self.chat_id_err_attention, text)
+        return web.json_response({'status': 'ok'})
 
-    async def saving_and_sending_file(self, request):
+    async def saving_and_sending_file(self, request: web.Request):
         data = await request.json()
         chat_type = data.get('chat_type')
         caption = data.get('caption')
@@ -67,9 +74,22 @@ class ServerLogic:
         input_file = FSInputFile(f'./{file_name}')
         await bot.send_document(chat_id, input_file, caption=caption)
         os.remove(f'./{file_name}')
+        return web.json_response({'status': 'ok'})
 
-    async def send_report(self, request):
-        pass
+    async def send_report(self, request: web.Request):
+        data = await request.json()
+        chat_type = data.get('chat_type')
+        chat_id = self._chat_type_check(chat_type)
+        report = data.get('report')
+        errors = data.get('errors')
+        amazon_status = data.get('amazon_status')
+        repricer_status = data.get('repricer_status')
+
+        text_block = collector_main_text_block(**report)
+        error_block = collector_error_block(**errors)
+        message = create_text_pattern(text_block, error_block, amazon_status, repricer_status)
+        await bot.send_message(chat_id, message)
+        return web.json_response({'status': 'ok'})
 
     async def error_backend(self, request: web.Request):
         data = await request.json()
@@ -78,3 +98,4 @@ class ServerLogic:
 
         error_message = f'На "{shop}" ошибка: {error}'
         await bot.send_message(self.chat_id_err_backend, error_message)
+        return web.json_response({'status': 'ok'})
