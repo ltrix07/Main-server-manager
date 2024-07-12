@@ -11,7 +11,7 @@ class WorkWithAPI:
         api_key = self.creds.get('api_proxy_token')
         api_domain = self.creds.get('api_proxy_url')
         self.api_url = api_domain + api_key
-        chat: dict = read_json('../chat/chats_info.json')
+        chat: dict = read_json('./chat/chats_info.json')
         self.chat_id_for_flipping_reports = chat.get('chat_id_for_flipping_reports')
         self.chat_id_for_errors_backend = chat.get('chat_id_for_errors_backend')
         self.chat_id_for_errors_attention = chat.get('chat_id_for_errors_attention')
