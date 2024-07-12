@@ -41,8 +41,11 @@ class ServerLogic:
         text = data.get('text')
         chat_type = data.get('chat_type')
         chat_id = self._chat_type_check(chat_type)
-        await bot.send_message(chat_id, text)
-        return web.json_response({'status': 'ok'})
+        if chat_id:
+            await bot.send_message(chat_id, text)
+            return web.json_response({'status': 'ok'})
+        else:
+            return web.json_response({'status': 'error', 'message': 'incorrect chat type'})
 
     async def get_proxies(self, request: web.Request):
         proxy_type = request.rel_url.query.get('type', 'isp')
