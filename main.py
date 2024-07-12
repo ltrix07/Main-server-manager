@@ -2,8 +2,8 @@ import asyncio
 from aiohttp import web
 from server.server_logic import ServerLogic
 
-CREDS_PATH = '../creds/creds.json'
-CHAT_PATH = '../chat/chats_info.json'
+CREDS_PATH = 'creds/creds.json'
+CHAT_PATH = 'chat/chats_info.json'
 
 
 async def main():
