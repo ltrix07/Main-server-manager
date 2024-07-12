@@ -1,8 +1,8 @@
 import aiohttp
 import asyncio
 import json
-from server.telegram_bot import bot
-from server.utils import read_json
+from main_server_manager.server.telegram_bot import bot
+from main_server_manager.server.utils import read_json
 
 
 class WorkWithAPI:

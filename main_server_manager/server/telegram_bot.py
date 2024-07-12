@@ -1,5 +1,5 @@
 from aiogram import Bot
-from server.utils import read_json
+from main_server_manager.server.utils import read_json
 
 
 token_path = './creds/creds.json'

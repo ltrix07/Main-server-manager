@@ -1,6 +1,6 @@
 import asyncio
 from aiohttp import web
-from server.server_logic import ServerLogic
+from main_server_manager.server.server_logic import ServerLogic
 
 CREDS_PATH = 'creds/creds.json'
 CHAT_PATH = 'chat/chats_info.json'
