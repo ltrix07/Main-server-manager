@@ -1,5 +1,4 @@
 from aiogram import Bot
-from aiogram.types import FSInputFile
 from server.utils import read_json
 
 
