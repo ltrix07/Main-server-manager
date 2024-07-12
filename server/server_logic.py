@@ -86,6 +86,7 @@ class ServerLogic:
         data = await request.json()
         chat_type = data.get('chat_type')
         chat_id = self._chat_type_check(chat_type)
+        shop_name = data.get('shop_name')
         report = data.get('report')
         errors = data.get('errors')
         amazon_status = data.get('amazon_status')

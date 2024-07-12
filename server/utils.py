@@ -21,10 +21,10 @@ def collector_error_block(**kwargs) -> str:
 
 
 def create_text_pattern(
-        text_block: str, error_block: str, amz_uploaded_status: bool, repricer_uploaded_status: bool
+        shop_name: str, text_block: str, error_block: str, amz_uploaded_status: bool, repricer_uploaded_status: bool
 ) -> str:
     repricer_text = 'Репрайсер успешно обновлен' if repricer_uploaded_status else 'Репрайсер не обновлен'
     amazon_text = 'Амазон успешно обновлен' if amz_uploaded_status else 'Амазон не обновлен'
-    text = f'{text_block}\n\n{error_block}\n\n{amazon_text}\n{repricer_text}'
+    text = f'{shop_name}\n\n{text_block}\n\n{error_block}\n\n{amazon_text}\n{repricer_text}'
 
     return text
