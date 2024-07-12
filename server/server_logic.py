@@ -94,7 +94,7 @@ class ServerLogic:
 
         text_block = collector_main_text_block(**report)
         error_block = collector_error_block(**errors)
-        message = create_text_pattern(text_block, error_block, amazon_status, repricer_status)
+        message = create_text_pattern(shop_name, text_block, error_block, amazon_status, repricer_status)
         await bot.send_message(chat_id, message)
         return web.json_response({'status': 'ok'})
 
