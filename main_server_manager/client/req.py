@@ -5,7 +5,7 @@ class Client:
     def __init__(self, host, port):
         self.req_link = f'http://{host}:{port}'
 
-    def _req(self, path: str, **kwargs):
+    def req(self, path: str, **kwargs):
         """
         Function for request to server.
         :param path: Path to server. Exemple: /get_proxies
