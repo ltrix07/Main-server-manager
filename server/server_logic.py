@@ -2,12 +2,12 @@ import base64
 import os
 from aiohttp import web
 from aiogram.types import FSInputFile
-from .utils import collector_main_text_block, create_text_pattern, read_json, \
+from server.utils import collector_main_text_block, create_text_pattern, read_json, \
     collector_error_block
-from .path import get_proxies_path, send_report_path, error_backend_path, error_attention_path, \
+from server.path import get_proxies_path, send_report_path, error_backend_path, error_attention_path, \
     saving_and_sending_file_path, send_message_path
-from .proxy_api import WorkWithAPI
-from .telegram_bot import bot
+from server.proxy_api import WorkWithAPI
+from server.telegram_bot import bot
 
 
 class ServerLogic:
