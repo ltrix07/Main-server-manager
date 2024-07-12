@@ -1,6 +1,6 @@
 from aiogram import Bot
 from aiogram.types import FSInputFile
-from server import read_json
+from server.utils import read_json
 
 
 token_path = '../creds/creds.json'

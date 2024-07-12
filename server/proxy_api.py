@@ -1,8 +1,8 @@
 import aiohttp
 import asyncio
 import json
-from server import bot
-from server import read_json
+from server.telegram_bot import bot
+from server.utils import read_json
 
 
 class WorkWithAPI:
@@ -39,7 +39,7 @@ class WorkWithAPI:
         }
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(self.url + '/order/make', data=json.dumps(data),
+                async with session.post(self.api_url + '/order/make', data=json.dumps(data),
                                         headers={'Content-Type': 'application/json'}) as response:
 
                     return await response.json()
